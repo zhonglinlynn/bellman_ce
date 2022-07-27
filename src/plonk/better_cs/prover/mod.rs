@@ -558,12 +558,12 @@ impl<E: Engine> ProverAssembly4WithNextStep<E> {
             .clone()
             .bitreversed_lde_using_bitreversed_ntt(&worker, LDE_FACTOR, &coset_factor, &mut None)?;
 
-        assert!(z_coset_lde_bitreversed.size() == required_domain_size * LDE_FACTOR);
+        assert_eq!(z_coset_lde_bitreversed.size(), required_domain_size * LDE_FACTOR);
 
         let z_shifted_coset_lde_bitreversed = z_shifted_in_monomial_form
             .bitreversed_lde_using_bitreversed_ntt(&worker, LDE_FACTOR, &coset_factor, &mut None)?;
 
-        assert!(z_shifted_coset_lde_bitreversed.size() == required_domain_size * LDE_FACTOR);
+        assert_eq!(z_shifted_coset_lde_bitreversed.size(), required_domain_size * LDE_FACTOR);
 
         // For both Z_1 and Z_2 we first check for grand products
         // z*(X)(A + beta*X + gamma)(B + beta*k_1*X + gamma)(C + beta*K_2*X + gamma) -
@@ -1226,13 +1226,15 @@ mod test {
             &worker,
         );
 
-        let verification_key = VerificationKey::from_setup(&setup, &worker, &crs_mons).unwrap();
-
+        let verification_key =
+            VerificationKey::from_setup(&setup, &worker, &crs_mons).unwrap();
         // println!("Verification key = {:?}", verification_key);
 
-        let precomputations = SetupPolynomialsPrecomputations::from_setup(&setup, &worker).unwrap();
+        let precomputations =
+            SetupPolynomialsPrecomputations::from_setup(&setup, &worker).unwrap();
 
-        let mut assembly = ProverAssembly4WithNextStep::<Bn256>::new();
+        let mut assembly =
+            ProverAssembly4WithNextStep::<Bn256>::new();
 
         circuit
             .clone()

@@ -58,17 +58,11 @@ impl<'a, E: Engine> Circuit<E> for MiMCDemo<'a, E> {
 
         // Allocate the first component of the preimage.
         let mut xl_value = self.xl;
-        let mut xl = cs.alloc(
-            || "preimage xl",
-            || xl_value.ok_or(SynthesisError::AssignmentMissing),
-        )?;
+        let mut xl = cs.alloc(|| "preimage xl",|| xl_value.ok_or(SynthesisError::AssignmentMissing))?;
 
         // Allocate the second component of the preimage.
         let mut xr_value = self.xr;
-        let mut xr = cs.alloc(
-            || "preimage xr",
-            || xr_value.ok_or(SynthesisError::AssignmentMissing),
-        )?;
+        let mut xr = cs.alloc(|| "preimage xr",|| xr_value.ok_or(SynthesisError::AssignmentMissing))?;
 
         for i in 0..MIMC_ROUNDS {
             // xL, xR := xR + (xL + Ci)^3, xL
@@ -80,10 +74,7 @@ impl<'a, E: Engine> Circuit<E> for MiMCDemo<'a, E> {
                 e.square();
                 e
             });
-            let tmp = cs.alloc(
-                || "tmp",
-                || tmp_value.ok_or(SynthesisError::AssignmentMissing),
-            )?;
+            let tmp = cs.alloc(|| "tmp",|| tmp_value.ok_or(SynthesisError::AssignmentMissing))?;
 
             cs.enforce(
                 || "tmp = (xL + Ci)^2",
@@ -105,10 +96,7 @@ impl<'a, E: Engine> Circuit<E> for MiMCDemo<'a, E> {
             let new_xl = if i == (MIMC_ROUNDS - 1) {
                 // This is the last round, xL is our image and so
                 // we allocate a public input.
-                cs.alloc_input(
-                    || "image",
-                    || new_xl_value.ok_or(SynthesisError::AssignmentMissing),
-                )?
+                cs.alloc_input(|| "image",|| new_xl_value.ok_or(SynthesisError::AssignmentMissing))?
             } else {
                 cs.alloc(
                     || "new_xl",
@@ -220,6 +208,7 @@ fn transpile_and_prove_with_no_precomputations_mimc() {
             None,
         )
         .unwrap();
+
         assert!(is_valid, "proof verification failed");
 
         total_proving += single_prove_time;
