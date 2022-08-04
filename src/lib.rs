@@ -18,17 +18,13 @@ extern crate rand;
 use crate::pairing::ff;
 pub use ff::*;
 pub use pairing::*;
-
 pub mod domain;
-// pub mod gpu;
-
 pub mod plonk;
 
 #[macro_use]
 extern crate lazy_static;
 
 pub mod kate_commitment;
-
 pub mod constants;
 mod group;
 mod multiexp;
@@ -39,7 +35,6 @@ mod source;
 mod tests;
 
 mod cs;
-
 mod multicore;
 pub mod worker {
     pub use super::multicore::*;
