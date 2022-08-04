@@ -41,6 +41,7 @@ blake2s_const = {version = "0.6", optional = true, path = "./src/plonk/blake2_co
 
 hex = "*"
 
+
 # gpu feature
 rust-gpu-tools = { version = "0.3.0", optional = true }
 ff-cl-gen = { git = "https://github.com/zhonglinlynn/ff-cl-gen.git", branch="master", version = "0.2.0", optional = true }
