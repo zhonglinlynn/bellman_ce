@@ -1,10 +1,10 @@
 [package]
-authors = ["skipjack8@live.com"]
-description = "plonk library with gpu"
-homepage = "https://github.com/matter-labs/bellman"
+authors = ["zhonglin"]
+description = "plonk library with filcoin gpu"
+homepage = "https://github.com/zhonglinlynn/bellman_ce.git"
 license = "MIT/Apache-2.0"
 name = "bellman_gpu"
-repository = "https://github.com/skipjack8/bellman_gpu"
+repository = "https://github.com/zhonglinlynn/bellman_ce.git"
 version = "0.1.0"
 edition = "2018"
 
