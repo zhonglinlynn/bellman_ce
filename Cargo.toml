@@ -1,6 +1,6 @@
 [package]
 authors = ["zhonglin"]
-description = "plonk library with filcoin gpu"
+description = "plonk library with gpu pairing 0.24.2"
 homepage = "https://github.com/zhonglinlynn/bellman_ce.git"
 license = "MIT/Apache-2.0"
 name = "bellman_gpu"
