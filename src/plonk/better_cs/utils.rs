@@ -4,7 +4,8 @@ use crate::plonk::commitments::transcript::Transcript;
 use crate::plonk::domains::Domain;
 use crate::plonk::polynomials::*;
 use crate::worker::Worker;
-use crate::{gpu, SynthesisError};
+use crate::locks::LockedMultiFFTKernel;
+use crate::SynthesisError;
 
 pub(crate) fn calculate_inverse_vanishing_polynomial_in_a_coset<E: Engine>(
     worker: &Worker,
@@ -87,7 +88,7 @@ pub(crate) fn calculate_lagrange_poly<E: Engine>(
     worker: &Worker,
     poly_size: usize,
     poly_number: usize,
-    fft_kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+    fft_kern: &mut Option<LockedMultiFFTKernel<E>>,
 ) -> Result<Polynomial<E, Coefficients>, SynthesisError> {
     assert!(poly_size.is_power_of_two());
     assert!(poly_number < poly_size);

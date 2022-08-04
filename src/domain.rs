@@ -18,7 +18,12 @@ use pairing::{
     CurveProjective, Engine,
 };
 
-use crate::gpu;
+
+use crate::locks::LockedMultiFFTKernel;
+use crate::locks::LockedMultiexpKernel;
+use ec_gpu_gen::EcError;
+use ec_gpu_gen::EcResult;
+
 
 use crate::plonk::domains::Domain;
 use log::{info, warn};
@@ -88,8 +93,8 @@ impl<E: Engine, G: Group<E>> EvaluationDomain<E, G> {
     pub fn fft(
         &mut self,
         worker: &Worker,
-        kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
-    ) -> gpu::GPUResult<()> {
+        kern: &mut Option<LockedMultiFFTKernel<E>>,
+    ) -> EcResult<()> {
         best_fft(kern, &mut self.coeffs, worker, &self.omega, self.exp)?;
         Ok(())
     }
@@ -97,8 +102,8 @@ impl<E: Engine, G: Group<E>> EvaluationDomain<E, G> {
     pub fn ifft(
         &mut self,
         worker: &Worker,
-        kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
-    ) -> gpu::GPUResult<()> {
+        kern: &mut Option<LockedMultiFFTKernel<E>>,
+    ) -> EcResult<()> {
         best_fft(kern, &mut self.coeffs, worker, &self.omegainv, self.exp)?;
 
         worker.scope(self.coeffs.len(), |scope, chunk| {
@@ -133,8 +138,8 @@ impl<E: Engine, G: Group<E>> EvaluationDomain<E, G> {
     pub fn coset_fft(
         &mut self,
         worker: &Worker,
-        kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
-    ) -> gpu::GPUResult<()> {
+        kern: &mut Option<LockedMultiFFTKernel<E>>,
+    ) -> EcResult<()> {
         self.distribute_powers(worker, E::Fr::multiplicative_generator());
         self.fft(worker, kern)?;
         Ok(())
@@ -143,8 +148,8 @@ impl<E: Engine, G: Group<E>> EvaluationDomain<E, G> {
     pub fn icoset_fft(
         &mut self,
         worker: &Worker,
-        kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
-    ) -> gpu::GPUResult<()> {
+        kern: &mut Option<LockedMultiFFTKernel<E>>,
+    ) -> EcResult<()> {
         let geninv = self.geninv;
         self.ifft(worker, kern)?;
         self.distribute_powers(worker, geninv);
@@ -233,15 +238,15 @@ impl<E: Engine, G: Group<E>> EvaluationDomain<E, G> {
 }
 
 fn best_fft<E: Engine, T: Group<E>>(
-    kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+    kern: &mut Option<LockedMultiFFTKernel<E>>,
     a: &mut [T],
     worker: &Worker,
     omega: &E::Fr,
     log_n: u32,
-) -> gpu::GPUResult<()> {
+) -> EcResult<()> {
     if let Some(ref mut kern) = kern {
         if kern
-            .with(|k: &mut gpu::MultiFFTKernel<E>| gpu_fft(k, a, omega, log_n))
+            .with(|k: &mut MultiFFTKernel<E>| gpu_fft(k, a, omega, log_n))
             .is_ok()
         {
             return Ok(());
@@ -259,11 +264,11 @@ fn best_fft<E: Engine, T: Group<E>>(
 }
 
 pub fn gpu_fft<E: Engine, T: Group<E>>(
-    kern: &mut gpu::MultiFFTKernel<E>,
+    kern: &mut MultiFFTKernel<E>,
     a: &mut [T],
     omega: &E::Fr,
     log_n: u32,
-) -> gpu::GPUResult<()> {
+) -> EcResult<()> {
     // EvaluationDomain module is supposed to work only with E::Fr elements, and not CurveProjective
     // points. The Bellman authors have implemented an unnecessarry abstraction called Group<E>
     // which is implemented for both PrimeField and CurveProjective elements. As nowhere in the code
@@ -393,11 +398,11 @@ pub fn distribute_powers<E: Engine>(coeffs: &mut [E::Fr], worker: &Worker, g: E:
     });
 }
 
-pub fn create_fft_kernel<E>(_log_d: usize, priority: bool) -> Option<gpu::MultiFFTKernel<E>>
+pub fn create_fft_kernel<E>(_log_d: usize, priority: bool) -> Option<MultiFFTKernel<E>>
 where
     E: Engine,
 {
-    match gpu::MultiFFTKernel::create(priority) {
+    match MultiFFTKernel::create(priority) {
         Ok(k) => {
             info!("GPU FFT kernel instantiated!");
             Some(k)
@@ -410,15 +415,15 @@ where
 }
 
 pub fn best_fft_multiple_gpu<E: Engine>(
-    kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+    kern: &mut Option<LockedMultiFFTKernel<E>>,
     polys: &mut [&mut [E::Fr]],
     worker: &Worker,
     omega: &E::Fr,
     log_n: u32,
-) -> gpu::GPUResult<()> {
+) -> EcResult<()> {
     if let Some(ref mut kern) = kern {
         if kern
-            .with(|k: &mut gpu::MultiFFTKernel<E>| gpu_fft_multiple(k, polys, omega, log_n))
+            .with(|k: &mut MultiFFTKernel<E>| gpu_fft_multiple(k, polys, omega, log_n))
             .is_ok()
         {
             return Ok(());
@@ -440,11 +445,11 @@ pub fn best_fft_multiple_gpu<E: Engine>(
 }
 
 pub fn gpu_fft_multiple<E: Engine>(
-    kern: &mut gpu::MultiFFTKernel<E>,
+    kern: &mut MultiFFTKernel<E>,
     polys: &mut [&mut [E::Fr]],
     omega: &E::Fr,
     log_n: u32,
-) -> gpu::GPUResult<()> {
+) -> EcResult<()> {
     kern.fft_multiple(polys, omega, log_n)?;
 
     Ok(())
@@ -552,12 +557,12 @@ fn parallel_fft_fr<E: Engine>(
 }
 
 pub fn best_fft_recursive_gpu<E: Engine>(
-    kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+    kern: &mut Option<LockedMultiFFTKernel<E>>,
     a: &mut [E::Fr],
     worker: &Worker,
     omega: &E::Fr,
     log_n: u32,
-) -> gpu::GPUResult<()> {
+) -> EcResult<()> {
     if let Some(ref mut kern) = kern {
         let size = a.len();
         let mut copy_a: Vec<E::Fr> = Vec::with_capacity(size);
@@ -593,7 +598,7 @@ pub fn best_fft_recursive_gpu<E: Engine>(
         println!("extract vector taken {:?}", now.elapsed());
 
         if kern
-            .with(|k: &mut gpu::MultiFFTKernel<E>| {
+            .with(|k: &mut MultiFFTKernel<E>| {
                 let domain = Domain::<E::Fr>::new_for_size(half_size as u64).unwrap();
                 let omega = domain.generator.inverse().unwrap();
                 gpu_fft_multiple(k, &mut [left, right], &omega, domain.power_of_two as u32)
@@ -671,14 +676,14 @@ pub fn best_fft_recursive_gpu<E: Engine>(
 
 // direction is true, do FFT, otherwise iFFT.
 pub fn fft_parallel<E: Engine>(
-    kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+    kern: &mut Option<LockedMultiFFTKernel<E>>,
     polys: &mut [&mut [E::Fr]],
     worker: &Worker,
     omega: &E::Fr,
     minv: &E::Fr,
     log_n: u32,
     direction: bool,
-) -> gpu::GPUResult<()> {
+) -> EcResult<()> {
     let size = 1 << log_n;
 
     use std::time::Instant;
@@ -709,8 +714,8 @@ pub fn fft_parallel<E: Engine>(
 
 #[test]
 fn test_best_fft_recursive_gpu_consistency() {
-    use crate::ff::{Field, PrimeField};
-    use crate::gpu::LockedMultiFFTKernel;
+    use crate::pairing::ff::{Field, PrimeField};
+    //use crate::LockedMultiFFTKernel;
     use crate::pairing::bn256::Fr;
     use crate::plonk::polynomials::{Polynomial, Values};
     use pairing::bn256::Bn256;

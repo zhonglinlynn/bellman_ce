@@ -14,7 +14,8 @@ pub use self::better_cs::keys::{
 };
 
 use self::better_cs::cs::{PlonkConstraintSystemParams, PlonkCsWidth4WithNextStepParams};
-use crate::gpu::LockedMultiFFTKernel;
+use crate::locks::LockedMultiFFTKernel;
+
 use crate::kate_commitment::*;
 use crate::pairing::Engine;
 use crate::plonk::commitments::transcript::*;

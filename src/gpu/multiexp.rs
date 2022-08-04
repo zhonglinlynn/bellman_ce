@@ -4,10 +4,12 @@ use super::sources;
 use super::utils;
 use crate::gpu::get_lock_name_and_gpu_range;
 use crate::multiexp::{dense_multiexp as cpu_dense_multiexp, FullDensity};
+
 use crate::pairing::{
     ff::{PrimeField, ScalarEngine},
     CurveAffine, CurveProjective, Engine,
 };
+
 use crate::worker::Worker;
 use log::{error, info};
 use rayon::prelude::*;
@@ -40,10 +42,8 @@ where
     E: Engine,
 {
     program: opencl::Program,
-
     core_count: usize,
     n: usize,
-
     priority: bool,
     _phantom: std::marker::PhantomData<E::Fr>,
 }
@@ -192,8 +192,8 @@ where
 
         // Using the algorithm below, we can calculate the final result by accumulating the results
         // of those `NUM_GROUPS` * `NUM_WINDOWS` threads.
-        let mut acc = <G as CurveAffine>::Projective::zero();
         let mut bits = 0;
+        let mut acc = <G as CurveAffine>::Projective::zero();
         for i in 0..num_windows {
             let w = std::cmp::min(window_size, exp_bits - bits);
             for _ in 0..w {

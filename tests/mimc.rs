@@ -6,6 +6,7 @@ use bellman_gpu::{Circuit, ConstraintSystem, SynthesisError};
 // Bring in some tools for using pairing-friendly curves
 use bellman_gpu::pairing::ff::Field;
 use bellman_gpu::pairing::Engine;
+
 use bellman_gpu::plonk::{make_precomputations, prove_by_steps};
 
 const MIMC_ROUNDS: usize = 322;

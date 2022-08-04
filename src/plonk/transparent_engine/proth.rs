@@ -1,4 +1,4 @@
-use crate::ff::*;
+use crate::pairing::ff::*;
 use super::{PartialReductionField, PartialTwoBitReductionField};
 
 #[derive(Copy, Clone, PartialEq, Eq, Default, Hash)]

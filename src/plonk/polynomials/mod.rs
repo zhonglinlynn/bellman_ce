@@ -10,6 +10,12 @@ use crate::plonk::fft::*;
 use crate::worker::Worker;
 use crate::{gpu, SynthesisError};
 
+
+use crate::locks::LockedMultiFFTKernel;
+use crate::locks::LockedMultiexpKernel;
+// use ec_gpu_gen::EcError;
+// use ec_gpu_gen::EcResult;
+
 use crate::plonk::fft::cooley_tukey_ntt;
 use crate::plonk::fft::cooley_tukey_ntt::partial_reduction;
 use crate::plonk::fft::cooley_tukey_ntt::CTPrecomputations;
@@ -1071,7 +1077,7 @@ impl<E: Engine> Polynomial<E, Coefficients> {
     pub fn fft(
         mut self,
         worker: &Worker,
-        kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+        kern: &mut Option<LockedMultiFFTKernel<E>>,
     ) -> Polynomial<E, Values> {
         debug_assert!(self.coeffs.len().is_power_of_two());
 
@@ -1093,7 +1099,7 @@ impl<E: Engine> Polynomial<E, Coefficients> {
         mut self,
         mut other: Polynomial<E, Coefficients>,
         worker: &Worker,
-        kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+        kern: &mut Option<LockedMultiFFTKernel<E>>,
     ) -> (Polynomial<E, Values>, Polynomial<E, Values>) {
         debug_assert!(self.coeffs.len().is_power_of_two());
 
@@ -1133,7 +1139,7 @@ impl<E: Engine> Polynomial<E, Coefficients> {
     pub fn coset_fft(
         mut self,
         worker: &Worker,
-        kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+        kern: &mut Option<LockedMultiFFTKernel<E>>,
     ) -> Polynomial<E, Values> {
         debug_assert!(self.coeffs.len().is_power_of_two());
         self.distribute_powers(worker, E::Fr::multiplicative_generator());
@@ -1461,7 +1467,7 @@ impl<E: Engine> Polynomial<E, Values> {
     pub fn ifft(
         mut self,
         worker: &Worker,
-        kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+        kern: &mut Option<LockedMultiFFTKernel<E>>,
     ) -> Polynomial<E, Coefficients> {
         debug_assert!(self.coeffs.len().is_power_of_two());
 
@@ -1506,7 +1512,7 @@ impl<E: Engine> Polynomial<E, Values> {
         mut self,
         mut other: Polynomial<E, Values>,
         worker: &Worker,
-        kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+        kern: &mut Option<LockedMultiFFTKernel<E>>,
     ) -> (Polynomial<E, Coefficients>, Polynomial<E, Coefficients>) {
         debug_assert!(self.coeffs.len().is_power_of_two());
 
@@ -1572,7 +1578,7 @@ impl<E: Engine> Polynomial<E, Values> {
     pub fn icoset_fft(
         self,
         worker: &Worker,
-        kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+        kern: &mut Option<LockedMultiFFTKernel<E>>,
     ) -> Polynomial<E, Coefficients> {
         debug_assert!(self.coeffs.len().is_power_of_two());
         let geninv = self.geninv;
@@ -1586,7 +1592,7 @@ impl<E: Engine> Polynomial<E, Values> {
         self,
         worker: &Worker,
         coset_generator: &E::Fr,
-        kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+        kern: &mut Option<LockedMultiFFTKernel<E>>,
     ) -> Polynomial<E, Coefficients> {
         debug_assert!(self.coeffs.len().is_power_of_two());
         let geninv = coset_generator.inverse().expect("must exist");
@@ -2546,7 +2552,7 @@ impl<E: Engine> Polynomial<E, Coefficients> {
         worker: &Worker,
         factor: usize,
         coset_factor: &E::Fr,
-        fft_kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+        fft_kern: &mut Option<LockedMultiFFTKernel<E>>,
     ) -> Result<Polynomial<E, Values>, SynthesisError> {
         debug_assert!(self.coeffs.len().is_power_of_two());
 
@@ -2694,7 +2700,7 @@ impl<E: Engine> Polynomial<E, Coefficients> {
 pub fn fft_multiple<E: Engine>(
     mut polys: Vec<Polynomial<E, Coefficients>>,
     worker: &Worker,
-    kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+    kern: &mut Option<LockedMultiFFTKernel<E>>,
 ) -> Vec<Polynomial<E, Values>> {
     if polys.is_empty() {
         return vec![];
@@ -2732,7 +2738,7 @@ pub fn fft_multiple<E: Engine>(
 pub fn ifft_multiple<E: Engine>(
     mut polys: Vec<Polynomial<E, Values>>,
     worker: &Worker,
-    kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+    kern: &mut Option<LockedMultiFFTKernel<E>>,
 ) -> Vec<Polynomial<E, Coefficients>> {
     if polys.is_empty() {
         return vec![];
@@ -2802,7 +2808,7 @@ pub fn bit_reverse<E: Engine>(a: &mut [E::Fr], log_n: u32) {
 #[test]
 fn test_fft_2_parallel() {
     use crate::ff::{Field, PrimeField};
-    use crate::gpu::LockedMultiFFTKernel;
+    //use crate::LockedMultiFFTKernel;
     use crate::pairing::bn256::Fr;
     use pairing::bn256::Bn256;
 

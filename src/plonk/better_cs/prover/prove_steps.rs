@@ -1,7 +1,6 @@
 use super::*;
 use crate::domain::fft_parallel;
-use crate::gpu;
-use crate::gpu::{LockedMultiFFTKernel, LockedMultiexpKernel};
+use crate::locks::{LockedMultiFFTKernel, LockedMultiexpKernel};
 use crate::plonk::utils::fast_clone;
 
 pub(crate) enum PrecomputationsForPolynomial<'a, E: Engine> {
@@ -42,7 +41,7 @@ pub(crate) fn get_precomputed_permutation_poly_lde_for_index<'a, E: Engine>(
         &'a SetupPolynomialsPrecomputations<E, PlonkCsWidth4WithNextStepParams>,
     >,
     worker: &Worker,
-    fft_kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+    fft_kern: &mut Option<LockedMultiFFTKernel<E>>,
 ) -> Result<PrecomputationsForPolynomial<'a, E>, SynthesisError> {
     let coset_factor = E::Fr::multiplicative_generator();
 
@@ -67,7 +66,7 @@ pub(crate) fn get_precomputed_selector_lde_for_index<'a, E: Engine>(
         &'a SetupPolynomialsPrecomputations<E, PlonkCsWidth4WithNextStepParams>,
     >,
     worker: &Worker,
-    fft_kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+    fft_kern: &mut Option<LockedMultiFFTKernel<E>>,
 ) -> Result<PrecomputationsForPolynomial<'a, E>, SynthesisError> {
     let coset_factor = E::Fr::multiplicative_generator();
 
@@ -92,7 +91,7 @@ pub(crate) fn get_precomputed_next_step_selector_lde_for_index<'a, E: Engine>(
         &'a SetupPolynomialsPrecomputations<E, PlonkCsWidth4WithNextStepParams>,
     >,
     worker: &Worker,
-    fft_kern: &mut Option<gpu::LockedMultiFFTKernel<E>>,
+    fft_kern: &mut Option<LockedMultiFFTKernel<E>>,
 ) -> Result<PrecomputationsForPolynomial<'a, E>, SynthesisError> {
     let coset_factor = E::Fr::multiplicative_generator();
 

@@ -1,4 +1,4 @@
-use crate::ff::*;
+use crate::pairing::ff::*;
 
 use crate::pairing::Engine;
 

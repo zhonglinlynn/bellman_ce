@@ -1,5 +1,5 @@
 use crate::ff::{Field, PrimeField};
-use crate::gpu::LockedMultiexpKernel;
+use super::locks::LockedMultiexpKernel;
 use crate::multiexp;
 use crate::pairing::{CurveAffine, CurveProjective, Engine};
 use crate::plonk::polynomials::*;

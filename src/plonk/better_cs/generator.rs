@@ -11,7 +11,7 @@ use std::marker::PhantomData;
 use super::cs::*;
 use super::keys::SetupPolynomials;
 pub use super::utils::make_non_residues;
-use crate::gpu::LockedMultiFFTKernel;
+use crate::locks::LockedMultiFFTKernel;
 
 #[derive(Debug, Clone)]
 pub struct GeneratorAssembly<E: Engine, P: PlonkConstraintSystemParams<E>> {

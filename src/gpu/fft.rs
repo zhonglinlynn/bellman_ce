@@ -2,8 +2,10 @@ use crate::gpu::{
     error::{GPUError, GPUResult},
     get_lock_name_and_gpu_range, locks, sources,
 };
+
 use crate::pairing::ff::Field;
 use crate::pairing::Engine;
+
 use crate::worker::THREAD_POOL;
 use log::{error, info};
 use rayon::join;
@@ -72,6 +74,7 @@ where
             global_work_size as usize,
             Some(local_work_size as usize),
         );
+
         kernel
             .arg(src_buffer)
             .arg(dst_buffer)

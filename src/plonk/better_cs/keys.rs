@@ -383,7 +383,7 @@ pub struct SetupPolynomialsPrecomputations<E: Engine, P: PlonkConstraintSystemPa
     pub(crate) _marker: std::marker::PhantomData<P>,
 }
 
-use crate::gpu::{LockedMultiFFTKernel, LockedMultiexpKernel};
+use crate::locks::{LockedMultiFFTKernel, LockedMultiexpKernel};
 use crate::plonk::fft::cooley_tukey_ntt::{BitReversedOmegas, CTPrecomputations};
 
 impl<E: Engine, P: PlonkConstraintSystemParams<E>> SetupPolynomialsPrecomputations<E, P> {

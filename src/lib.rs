@@ -20,7 +20,7 @@ pub use ff::*;
 pub use pairing::*;
 
 pub mod domain;
-pub mod gpu;
+// pub mod gpu;
 
 pub mod plonk;
 
@@ -52,6 +52,7 @@ use std::str::FromStr;
 
 #[macro_use]
 mod log;
+mod locks;
 
 cfg_if! {
     if #[cfg(not(feature = "nolog"))] {

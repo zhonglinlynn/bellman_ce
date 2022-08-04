@@ -13,6 +13,11 @@ use super::worker::{Waiter, Worker};
 use super::SynthesisError;
 use crate::gpu;
 
+use crate::locks::LockedMultiFFTKernel;
+use crate::locks::LockedMultiexpKernel;
+use ec_gpu_gen::EcError;
+use ec_gpu_gen::EcResult;
+
 /// An object that builds a source of bases.
 pub trait SourceBuilder<G: CurveAffine>: Send + Sync + 'static + Clone {
     type Source: Source<G>;
@@ -269,12 +274,12 @@ pub fn dense_multiexp<G: CurveAffine>(
     pool: &Worker,
     bases: Arc<Vec<G>>,
     exponents: Arc<Vec<<<G::Engine as ScalarEngine>::Fr as PrimeField>::Repr>>,
-    kern: &mut Option<gpu::LockedMultiexpKernel<G::Engine>>,
+    kern: &mut Option<LockedMultiexpKernel<G::Engine>>,
 ) -> Waiter<Result<<G as CurveAffine>::Projective, SynthesisError>> {
     assert_eq!(bases.len(), exponents.len(), "bases must be equal to exps.");
     let n = bases.len();
     if let Some(ref mut kern) = kern {
-        if let Ok(p) = kern.with(|k: &mut gpu::MultiexpKernel<G::Engine>| {
+        if let Ok(p) = kern.with(|k: &mut MultiexpKernel<G::Engine>| {
             let bss = bases.clone();
             let exps = exponents.clone();
             k.dense_multiexp(pool, bss, exps, n)
@@ -354,11 +359,11 @@ fn test_with_bls12() {
     assert_eq!(naive, fast);
 }
 
-pub fn create_multiexp_kernel<E>(_log_d: usize, priority: bool) -> Option<gpu::MultiexpKernel<E>>
+pub fn create_multiexp_kernel<E>(_log_d: usize, priority: bool) -> Option<MultiexpKernel<E>>
 where
     E: crate::pairing::Engine,
 {
-    match gpu::MultiexpKernel::<E>::create(priority) {
+    match MultiexpKernel::<E>::create(priority) {
         Ok(k) => {
             info!("GPU Multiexp kernel instantiated!");
             Some(k)
@@ -378,11 +383,11 @@ pub fn gpu_multiexp_consistency() {
     use std::time::Instant;
 
     let _ = env_logger::try_init();
-    gpu::dump_device_list();
+    dump_device_list();
 
     const MAX_LOG_D: usize = 26;
     const START_LOG_D: usize = 16;
-    let mut kern = Some(gpu::LockedMultiexpKernel::<Bn256>::new(MAX_LOG_D, false));
+    let mut kern = Some(LockedMultiexpKernel::<Bn256>::new(MAX_LOG_D, false));
     let pool = Worker::new();
 
     let rng = &mut rand::thread_rng();
