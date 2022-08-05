@@ -128,11 +128,11 @@ macro_rules! locked_kernel {
             kernel: Option<$kern<'a, E>>,
         }
 
-        impl<E> $class<E>
+        impl<E> $class<'_, E>
         where
             E: Engine,
         {
-            pub fn new(log_d: usize, priority: bool) -> $class<E> {
+            pub fn new(log_d: usize, priority: bool) -> $class<'static, E> {
                 $class::<E> {
                     log_d,
                     priority,
