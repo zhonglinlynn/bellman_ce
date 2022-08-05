@@ -17,6 +17,7 @@ use crate::locks::LockedMultiFFTKernel;
 use crate::locks::LockedMultiexpKernel;
 use ec_gpu_gen::EcError;
 use ec_gpu_gen::EcResult;
+use ec_gpu_gen::multiexp::MultiexpKernel;
 
 /// An object that builds a source of bases.
 pub trait SourceBuilder<G: CurveAffine>: Send + Sync + 'static + Clone {
@@ -359,7 +360,8 @@ fn test_with_bls12() {
     assert_eq!(naive, fast);
 }
 
-pub fn create_multiexp_kernel<E>(_log_d: usize, priority: bool) -> Option<MultiexpKernel<E>>
+use rust_gpu_tools::Device;
+pub fn create_multiexp_kernel<E>(_log_d: usize, priority: &[&Device]) -> Option<MultiexpKernel<E>>
 where
     E: crate::pairing::Engine,
 {

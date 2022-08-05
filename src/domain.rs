@@ -280,7 +280,7 @@ pub fn gpu_fft<E: Engine, T: Group<E>>(
     // as it seems safe and needs less modifications in the current structure of Bellman library.
     // So we use E::Fr instead of Group<E> directly.
     let a = unsafe { std::mem::transmute::<&mut [T], &mut [E::Fr]>(a) };
-    kern.fft_multiple(&mut [a], omega, log_n)?;
+    kern.radix_fft_many(&mut [a], omega, &[log_n])?;
 
     Ok(())
 }

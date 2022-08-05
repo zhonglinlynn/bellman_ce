@@ -107,7 +107,7 @@ impl Drop for PriorityLock {
 }
 
 
-use ec_gpu_gen::{EcError, EcResult};
+use ec_gpu_gen::{EcError as GPUError, EcResult as GPUResult};
 use ec_gpu_gen::multiexp::MultiexpKernel;
 use ec_gpu_gen::fft::FftKernel;
 
@@ -163,7 +163,7 @@ macro_rules! locked_kernel {
             {
                 if let Ok(flag) = std::env::var("BELLMAN_USE_CPU") {
                     if flag == "1" {
-                        return Err(GPUError::GPUDisabled);
+                        return Err(GPUError::Simple("GPUs wrong 1"));
                     }
                 }
 
@@ -183,7 +183,7 @@ macro_rules! locked_kernel {
                             Ok(v) => return Ok(v),
                         }
                     } else {
-                        return Err(GPUError::KernelUninitialized);
+                        return Err(GPUError::Simple("GPUs wrong 2"));
                     }
                 }
             }
