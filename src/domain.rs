@@ -401,7 +401,7 @@ pub fn distribute_powers<E: Engine>(coeffs: &mut [E::Fr], worker: &Worker, g: E:
 }
 
 use rust_gpu_tools::Device;
-pub fn create_fft_kernel<E>(_log_d: usize, priority: &[&Device]) -> Option<FftKernel<E>>
+pub fn create_fft_kernel<'a, E>(_log_d: usize, priority: &'a [&Device]) -> Option<FftKernel<'a, E>>
 where
     E: Engine,
 {

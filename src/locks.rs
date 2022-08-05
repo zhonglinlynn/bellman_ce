@@ -119,13 +119,13 @@ use std::ops::Range;
 
 macro_rules! locked_kernel {
     ($class:ident, $kern:ident, $func:ident, $name:expr) => {
-        pub struct $class<E>
+        pub struct $class<'a, E>
         where
             E: Engine,
         {
             log_d: usize,
             priority: bool,
-            kernel: Option<$kern<E>>,
+            kernel: Option<$kern<'a, E>>,
         }
 
         impl<E> $class<E>

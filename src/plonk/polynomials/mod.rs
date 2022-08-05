@@ -8,7 +8,7 @@ use crate::plonk::fft::with_precomputation;
 use crate::plonk::fft::with_precomputation::FftPrecomputations;
 use crate::plonk::fft::*;
 use crate::worker::Worker;
-use crate::{gpu, SynthesisError};
+use crate::SynthesisError;
 
 
 use crate::locks::LockedMultiFFTKernel;

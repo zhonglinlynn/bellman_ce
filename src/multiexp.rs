@@ -11,7 +11,6 @@ use std::sync::Arc;
 
 use super::worker::{Waiter, Worker};
 use super::SynthesisError;
-use crate::gpu;
 
 use crate::locks::LockedMultiFFTKernel;
 use crate::locks::LockedMultiexpKernel;
@@ -361,7 +360,7 @@ fn test_with_bls12() {
 }
 
 use rust_gpu_tools::Device;
-pub fn create_multiexp_kernel<E>(_log_d: usize, priority: &[&Device]) -> Option<MultiexpKernel<E>>
+pub fn create_multiexp_kernel<'a, E>(_log_d: usize, priority: &'a[&Device]) -> Option<MultiexpKernel<'a, E>>
 where
     E: crate::pairing::Engine,
 {
@@ -385,7 +384,7 @@ pub fn gpu_multiexp_consistency() {
     use std::time::Instant;
 
     let _ = env_logger::try_init();
-    dump_device_list();
+    // dump_device_list();
 
     const MAX_LOG_D: usize = 26;
     const START_LOG_D: usize = 16;
