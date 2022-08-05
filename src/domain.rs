@@ -23,6 +23,8 @@ use crate::locks::LockedMultiFFTKernel;
 use crate::locks::LockedMultiexpKernel;
 use ec_gpu_gen::EcError;
 use ec_gpu_gen::EcResult;
+use ec_gpu_gen::fft::FftKernel;
+use ec_gpu_gen::multiexp::MultiexpKernel;
 
 
 use crate::plonk::domains::Domain;
@@ -246,7 +248,7 @@ fn best_fft<E: Engine, T: Group<E>>(
 ) -> EcResult<()> {
     if let Some(ref mut kern) = kern {
         if kern
-            .with(|k: &mut MultiFFTKernel<E>| gpu_fft(k, a, omega, log_n))
+            .with(|k: &mut FftKernel<E>| gpu_fft(k, a, omega, log_n))
             .is_ok()
         {
             return Ok(());
@@ -264,7 +266,7 @@ fn best_fft<E: Engine, T: Group<E>>(
 }
 
 pub fn gpu_fft<E: Engine, T: Group<E>>(
-    kern: &mut MultiFFTKernel<E>,
+    kern: &mut FftKernel<E>,
     a: &mut [T],
     omega: &E::Fr,
     log_n: u32,
@@ -398,11 +400,12 @@ pub fn distribute_powers<E: Engine>(coeffs: &mut [E::Fr], worker: &Worker, g: E:
     });
 }
 
-pub fn create_fft_kernel<E>(_log_d: usize, priority: bool) -> Option<MultiFFTKernel<E>>
+use rust_gpu_tools::Device;
+pub fn create_fft_kernel<E>(_log_d: usize, priority: &[&Device]) -> Option<FftKernel<E>>
 where
     E: Engine,
 {
-    match MultiFFTKernel::create(priority) {
+    match FftKernel::create(&priority) {
         Ok(k) => {
             info!("GPU FFT kernel instantiated!");
             Some(k)
@@ -423,7 +426,7 @@ pub fn best_fft_multiple_gpu<E: Engine>(
 ) -> EcResult<()> {
     if let Some(ref mut kern) = kern {
         if kern
-            .with(|k: &mut MultiFFTKernel<E>| gpu_fft_multiple(k, polys, omega, log_n))
+            .with(|k: &mut FftKernel<E>| gpu_fft_multiple(k, polys, omega, log_n))
             .is_ok()
         {
             return Ok(());
@@ -445,7 +448,7 @@ pub fn best_fft_multiple_gpu<E: Engine>(
 }
 
 pub fn gpu_fft_multiple<E: Engine>(
-    kern: &mut MultiFFTKernel<E>,
+    kern: &mut FftKernel<E>,
     polys: &mut [&mut [E::Fr]],
     omega: &E::Fr,
     log_n: u32,
@@ -598,7 +601,7 @@ pub fn best_fft_recursive_gpu<E: Engine>(
         println!("extract vector taken {:?}", now.elapsed());
 
         if kern
-            .with(|k: &mut MultiFFTKernel<E>| {
+            .with(|k: &mut FftKernel<E>| {
                 let domain = Domain::<E::Fr>::new_for_size(half_size as u64).unwrap();
                 let omega = domain.generator.inverse().unwrap();
                 gpu_fft_multiple(k, &mut [left, right], &omega, domain.power_of_two as u32)
@@ -715,7 +718,6 @@ pub fn fft_parallel<E: Engine>(
 #[test]
 fn test_best_fft_recursive_gpu_consistency() {
     use crate::pairing::ff::{Field, PrimeField};
-    //use crate::LockedMultiFFTKernel;
     use crate::pairing::bn256::Fr;
     use crate::plonk::polynomials::{Polynomial, Values};
     use pairing::bn256::Bn256;

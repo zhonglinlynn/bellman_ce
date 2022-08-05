@@ -43,7 +43,10 @@ hex = "*"
 
 
 # gpu feature
-rust-gpu-tools = { version = "0.3.0", optional = true }
+
+# rust-gpu-tools = { version = "0.3.0", optional = true }
+rust-gpu-tools = { version = "0.6.1", default-features = false, optional = true }
+
 ff-cl-gen = { git = "https://github.com/zhonglinlynn/ff-cl-gen.git", branch="master", version = "0.2.0", optional = true }
 
 fs2 = { version = "0.4.3", optional = true }
